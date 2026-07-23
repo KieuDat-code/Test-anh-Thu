@@ -1,6 +1,6 @@
 import pg from 'pg';
-import { INITIAL_USERS, INITIAL_TASKS } from '../data/initialData.js';
-import { Task, User, TaskActivity } from '../types.js';
+import { INITIAL_USERS, INITIAL_TASKS } from '../data/initialData';
+import { Task, User, TaskActivity } from '../types';
 
 const { Pool } = pg;
 

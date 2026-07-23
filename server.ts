@@ -14,8 +14,8 @@ import {
   deleteTask,
   addTaskActivity,
   initDb,
-} from './src/lib/db.js';
-import { Task, User } from './src/types.js';
+} from './src/lib/db';
+import { Task, User } from './src/types';
 
 dotenv.config();
 
