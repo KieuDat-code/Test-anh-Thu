@@ -1,0 +1,6 @@
+{
+  "name": "Task Manager",
+  "description": "Full-stack task management application with Google OAuth, team assignment, Kanban boards, list views, priority filtering, and role-based permissions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
