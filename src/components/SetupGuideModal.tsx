@@ -17,7 +17,8 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({ isOpen, onClos
     setTimeout(() => setCopiedSection(null), 2000);
   };
 
-  const envSnippet = `# Environment Variables (.env)
+  const envSnippet = `# Environment Variables (.env & Vercel)
+DATABASE_URL="postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
 GOOGLE_CLIENT_ID="your-google-oauth-client-id.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your-google-oauth-client-secret"
 APP_URL="${window.location.origin}"
