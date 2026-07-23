@@ -45,8 +45,10 @@ app.use(async (req, res, next) => {
   next();
 });
 
+const apiRouter = express.Router();
+
 // Health check
-app.get('/api/health', (req, res) => {
+apiRouter.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -55,7 +57,7 @@ app.get('/api/health', (req, res) => {
 // --------------------------------------------------
 
 // 1. Get Google OAuth URL
-app.get('/api/auth/google/url', (req, res) => {
+apiRouter.get('/auth/google/url', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const appUrl = process.env.APP_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
   const redirectUri = `${appUrl}/auth/callback`;
@@ -89,7 +91,7 @@ app.get('/api/auth/google/url', (req, res) => {
 });
 
 // 2. OAuth Callback handler
-app.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
+apiRouter.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
   const { code } = req.query;
   const usersList = await getUsers();
 
@@ -147,15 +149,25 @@ app.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
 });
 
 // 3. Get current active session user
-app.get('/api/auth/me', async (req, res) => {
-  const usersList = await getUsers();
+apiRouter.get('/auth/me', async (req, res) => {
   const activeId = await getActiveUserId();
-  const user = usersList.find(u => u.id === activeId) || usersList[0];
+  if (!activeId) {
+    res.json({ user: null, activeUserId: null });
+    return;
+  }
+  const usersList = await getUsers();
+  const user = usersList.find(u => u.id === activeId) || null;
   res.json({ user, activeUserId: activeId });
 });
 
-// 4. Set current user profile
-app.post('/api/auth/switch-user', async (req, res) => {
+// 4. Logout / Sign out endpoint
+apiRouter.post('/auth/logout', async (req, res) => {
+  await setActiveUserId(null);
+  res.json({ success: true, user: null });
+});
+
+// 5. Set current user profile
+apiRouter.post('/auth/switch-user', async (req, res) => {
   const { userId } = req.body;
   const usersList = await getUsers();
   const found = usersList.find(u => u.id === userId);
@@ -171,12 +183,12 @@ app.post('/api/auth/switch-user', async (req, res) => {
 // User Management APIs
 // --------------------------------------------------
 
-app.get('/api/users', async (req, res) => {
+apiRouter.get('/users', async (req, res) => {
   const usersList = await getUsers();
   res.json(usersList);
 });
 
-app.post('/api/users', async (req, res) => {
+apiRouter.post('/users', async (req, res) => {
   const { name, email, avatar, role } = req.body;
   if (!name || !email) {
     res.status(400).json({ error: 'Name and email are required' });
@@ -195,7 +207,7 @@ app.post('/api/users', async (req, res) => {
   res.status(201).json(created);
 });
 
-app.patch('/api/users/:id', async (req, res) => {
+apiRouter.patch('/users/:id', async (req, res) => {
   const { id } = req.params;
   const { name, email, avatar, role } = req.body;
 
@@ -212,7 +224,7 @@ app.patch('/api/users/:id', async (req, res) => {
 // Task Management APIs
 // --------------------------------------------------
 
-app.get('/api/tasks', async (req, res) => {
+apiRouter.get('/tasks', async (req, res) => {
   const { search, status, priority, assigneeId, dueDateFilter } = req.query;
 
   const tasksList = await getTasks({
@@ -226,7 +238,7 @@ app.get('/api/tasks', async (req, res) => {
   res.json(tasksList);
 });
 
-app.post('/api/tasks', async (req, res) => {
+apiRouter.post('/tasks', async (req, res) => {
   const { title, description, dueDate, priority, status, assigneeIds, tags, progress } = req.body;
 
   if (!title) {
@@ -267,7 +279,7 @@ app.post('/api/tasks', async (req, res) => {
   res.status(201).json(created);
 });
 
-app.put('/api/tasks/:id', async (req, res) => {
+apiRouter.put('/tasks/:id', async (req, res) => {
   const { id } = req.params;
   const { title, description, dueDate, priority, status, assigneeIds, tags, progress } = req.body;
 
@@ -289,7 +301,7 @@ app.put('/api/tasks/:id', async (req, res) => {
   res.json(updated);
 });
 
-app.delete('/api/tasks/:id', async (req, res) => {
+apiRouter.delete('/tasks/:id', async (req, res) => {
   const { id } = req.params;
   const deleted = await deleteTask(id);
 
@@ -301,7 +313,7 @@ app.delete('/api/tasks/:id', async (req, res) => {
   res.json({ success: true, deletedId: id });
 });
 
-app.post('/api/tasks/:id/activity', async (req, res) => {
+apiRouter.post('/tasks/:id/activity', async (req, res) => {
   const { id } = req.params;
   const { action } = req.body;
 
@@ -318,6 +330,10 @@ app.post('/api/tasks/:id/activity', async (req, res) => {
 
   res.json(updated);
 });
+
+// Mount router on both /api and / to handle Vercel serverless rewrites seamlessly
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // --------------------------------------------------
 // Vite Middleware / Static Serving for local container

@@ -23,13 +23,7 @@ import { SetupGuideModal } from './components/SetupGuideModal';
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User>({
-    id: 'usr-1',
-    name: 'Alex Morgan',
-    email: 'alex.morgan@workspace.io',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    role: 'Admin',
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [currentView, setCurrentView] = useState<'kanban' | 'list'>('kanban');
   const [filter, setFilter] = useState<FilterState>({
@@ -73,9 +67,7 @@ export default function App() {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
         const data = await res.json();
-        if (data.user) {
-          setCurrentUser(data.user);
-        }
+        setCurrentUser(data.user || null);
       }
     } catch (err) {
       console.error('Error fetching current user:', err);
@@ -248,12 +240,21 @@ export default function App() {
       });
       if (res.ok) {
         await fetchUsers();
-        if (currentUser.id === userId) {
+        if (currentUser?.id === userId) {
           await fetchCurrentUser();
         }
       }
     } catch (err) {
       console.error('Error updating user:', err);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setCurrentUser(null);
+    } catch (err) {
+      console.error('Error signing out:', err);
     }
   };
 
@@ -286,10 +287,34 @@ export default function App() {
         onOpenUserManagement={() => setIsUserManagementModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onSwitchUser={handleSwitchUser}
+        onLogout={handleSignOut}
       />
 
       {/* Main Workspace Canvas */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        
+        {/* Unauthenticated Guest Banner */}
+        {!currentUser && (
+          <div className="mb-6 p-4 rounded-2xl glass border border-indigo-500/30 bg-indigo-500/10 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600/30 text-indigo-300 flex items-center justify-center font-bold text-lg border border-indigo-400/30 flex-shrink-0">
+                🔒
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">Chưa đăng nhập tài khoản</h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Vui lòng đăng nhập tài khoản Google hoặc chọn một thành viên trong Workspace để bắt đầu tạo và quản lý công việc trên Database của bạn.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/25 border border-indigo-400/30 transition-all flex-shrink-0"
+            >
+              Đăng nhập ngay
+            </button>
+          </div>
+        )}
         
         {/* Workspace Summary Metric Widgets */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

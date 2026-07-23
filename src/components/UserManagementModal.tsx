@@ -6,7 +6,7 @@ interface UserManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
   users: User[];
-  currentUser: User;
+  currentUser: User | null;
   onAddUser: (user: Partial<User>) => void;
   onUpdateUser: (userId: string, data: Partial<User>) => void;
   onSwitchUser: (userId: string) => void;
@@ -141,7 +141,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
             </h3>
 
             {users.map((u) => {
-              const isActive = currentUser.id === u.id;
+              const isActive = currentUser?.id === u.id;
               const isEditingThis = editingUserId === u.id;
 
               return (
@@ -202,7 +202,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                           {u.role}
                         </span>
 
-                        {currentUser.role === 'Admin' && (
+                        {currentUser?.role === 'Admin' && (
                           <button
                             onClick={() => {
                               setEditingUserId(u.id);

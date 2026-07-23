@@ -18,7 +18,7 @@ if (connectionString) {
 // In-memory fallback if no PostgreSQL connection URL provided
 let usersMemory: User[] = [...INITIAL_USERS];
 let tasksMemory: Task[] = [...INITIAL_TASKS];
-let activeUserIdMemory: string = usersMemory[0].id;
+let activeUserIdMemory: string | null = null;
 
 let isInitialized = false;
 
@@ -178,11 +178,11 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
   return { id, name, email, avatar, role, googleId: curr.google_id };
 }
 
-export async function getActiveUserId(): Promise<string> {
+export async function getActiveUserId(): Promise<string | null> {
   return activeUserIdMemory;
 }
 
-export async function setActiveUserId(id: string) {
+export async function setActiveUserId(id: string | null) {
   activeUserIdMemory = id;
 }
 

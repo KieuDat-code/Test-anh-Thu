@@ -20,7 +20,7 @@ interface TaskDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   users: User[];
-  currentUser: User;
+  currentUser: User | null;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   onUpdateStatus: (taskId: string, newStatus: TaskStatus) => void;

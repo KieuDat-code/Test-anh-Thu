@@ -5,7 +5,7 @@ import { User } from '../types';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentUser: User;
+  currentUser: User | null;
   users: User[];
   onSwitchUser: (userId: string) => void;
   onOAuthSuccess: (user: User) => void;
@@ -152,7 +152,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Quick Account Switcher */}
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {users.map((u) => {
-              const isCurrent = currentUser.id === u.id;
+              const isCurrent = currentUser?.id === u.id;
               return (
                 <button
                   key={u.id}

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   User as UserIcon,
   LogIn,
+  LogOut,
 } from 'lucide-react';
 import { User, FilterState, TaskStatus, TaskPriority } from '../types';
 
@@ -18,13 +19,14 @@ interface NavbarProps {
   onViewChange: (view: 'kanban' | 'list') => void;
   filter: FilterState;
   onFilterChange: (newFilter: FilterState) => void;
-  currentUser: User;
+  currentUser: User | null;
   users: User[];
   onOpenCreateTask: () => void;
   onOpenSetupGuide: () => void;
   onOpenUserManagement: () => void;
   onOpenAuthModal: () => void;
   onSwitchUser: (userId: string) => void;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -39,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenUserManagement,
   onOpenAuthModal,
   onSwitchUser,
+  onLogout,
 }) => {
   return (
     <header className="glass sticky top-0 z-30 shadow-2xl border-b border-white/10">
@@ -140,44 +143,55 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Active User Avatar & Profile Switcher */}
             <div className="relative group flex items-center pl-2 border-l border-white/10">
-              <button
-                onClick={onOpenUserManagement}
-                className="flex items-center gap-2 p-1 rounded-xl hover:bg-white/10 transition-all text-left"
-              >
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm"
-                />
-                <div className="hidden xl:block">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-semibold text-slate-100 leading-none">
-                      {currentUser.name}
-                    </span>
-                    {currentUser.role === 'Admin' ? (
-                      <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded font-medium">
-                        Admin
+              {currentUser ? (
+                <>
+                  <button
+                    onClick={onOpenUserManagement}
+                    className="flex items-center gap-2 p-1 rounded-xl hover:bg-white/10 transition-all text-left"
+                  >
+                    <img
+                      src={currentUser.avatar}
+                      alt={currentUser.name}
+                      className="w-8 h-8 rounded-full object-cover border border-white/20 shadow-sm"
+                    />
+                    <div className="hidden xl:block">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-semibold text-slate-100 leading-none">
+                          {currentUser.name}
+                        </span>
+                        {currentUser.role === 'Admin' ? (
+                          <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded font-medium">
+                            Admin
+                          </span>
+                        ) : (
+                          <span className="text-[10px] bg-slate-500/20 text-slate-300 border border-slate-500/30 px-1 rounded font-medium">
+                            Member
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-slate-400 font-normal truncate max-w-[120px] block">
+                        {currentUser.email}
                       </span>
-                    ) : (
-                      <span className="text-[10px] bg-slate-500/20 text-slate-300 border border-slate-500/30 px-1 rounded font-medium">
-                        Member
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-normal truncate max-w-[120px] block">
-                    {currentUser.email}
-                  </span>
-                </div>
-              </button>
+                    </div>
+                  </button>
 
-              {/* Quick Sign-In / Switch Account Button */}
-              <button
-                onClick={onOpenAuthModal}
-                className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-white/10 rounded-xl ml-1 transition-all"
-                title="Google SSO / Switch User Context"
-              >
-                <LogIn className="w-4 h-4" />
-              </button>
+                  <button
+                    onClick={onLogout}
+                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-white/10 rounded-xl ml-1 transition-all"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={onOpenAuthModal}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/25 border border-indigo-400/30 transition-all"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </button>
+              )}
             </div>
 
           </div>
